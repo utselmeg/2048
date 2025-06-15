@@ -17,14 +17,14 @@ class TwentyFortyEightGUI:
         self.game = game
         self.root = tk.Tk()
         self.root.title("2048")
-        canvas_height = TILE_SIZE * game.get_grid_height() + 50
-        canvas_width = TILE_SIZE * game.get_grid_width()
-        self.canvas = tk.Canvas(self.root, width=canvas_width,
-                                height=canvas_height, bg=BACKGROUND_COLOR)
+        self.canvas_height = TILE_SIZE * game.get_grid_height() + 50
+        self.canvas_width = TILE_SIZE * game.get_grid_width()
+        self.canvas = tk.Canvas(self.root, width=self.canvas_width,
+                                height=self.canvas_height, bg=BACKGROUND_COLOR)
         self.canvas.pack()
         self.root.bind("<Key>", self.key_handler)
         self.score_text = self.canvas.create_text(
-            canvas_width // 2, 25, text="Score: 0",
+            self.canvas_width // 2, 25, text="Score: 0",
             font=SCORE_FONT, fill="white"
         )
         self.draw()
@@ -39,7 +39,7 @@ class TwentyFortyEightGUI:
     def draw(self):
         self.canvas.delete("all")
         self.score_text = self.canvas.create_text(
-            self.canvas.winfo_width() // 2, 25,
+            self.canvas_width // 2, 25,
             text=f"Score: {self.game.score}",
             font=SCORE_FONT, fill="white"
         )
