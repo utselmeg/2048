@@ -42,6 +42,10 @@ class TwentyFortyEight:
     Class to run the game logic.
     """
     def __init__(self, grid_height, grid_width):
+        self._grid = None
+        self.score = None
+        self.last_moves = None
+        self.merge_positions = None
         self._height = grid_height
         self._width = grid_width
         self.reset()
@@ -95,6 +99,7 @@ class TwentyFortyEight:
             return [(row, 0) for row in range(self._height)]
         elif direction == RIGHT:
             return [(row, self._width - 1) for row in range(self._height)]
+        return None
 
     def traverse_line(self, start, offset):
         row, col = start
