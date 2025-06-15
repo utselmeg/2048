@@ -17,8 +17,8 @@ class TwentyFortyEightGUI:
         self.game = game
         self.root = tk.Tk()
         self.root.title("2048")
-        self.canvas_height = TILE_SIZE * game.get_grid_height() + 50
         self.canvas_width = TILE_SIZE * game.get_grid_width()
+        self.canvas_height = TILE_SIZE * game.get_grid_height() + 50
         self.canvas = tk.Canvas(self.root, width=self.canvas_width,
                                 height=self.canvas_height, bg=BACKGROUND_COLOR)
         self.canvas.pack()
@@ -46,6 +46,28 @@ class TwentyFortyEightGUI:
             self.root.after(10)
         self.canvas.delete(tile)
 
+    def draw_merge_pop_effect(self, merged_tiles):
+        # merged_tiles = list of (row, col, value)
+        size_steps = [1.1, 1.3, 1.1, 1.0]
+        for scale in size_steps:
+            self.canvas.delete("merge_pop")
+            for row, col, value in merged_tiles:
+                x = col * TILE_SIZE + TILE_SIZE // 2
+                y = row * TILE_SIZE + TILE_SIZE // 2 + 50
+                color = TILE_COLORS.get(value, "#3c3a32")
+                half_size = (TILE_SIZE - TILE_PADDING * 2) * scale / 2
+                x0 = x - half_size
+                y0 = y - half_size
+                x1 = x + half_size
+                y1 = y + half_size
+                self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="", tags="merge_pop")
+                self.canvas.create_text(x, y, text=str(value),
+                                        font=("Verdana", int(24 * scale), "bold"),
+                                        fill="black", tags="merge_pop")
+            self.root.update()
+            self.root.after(30)
+        self.canvas.delete("merge_pop")
+
     def draw(self):
         for move in getattr(self.game, 'last_moves', []):
             from_row, from_col, to_row, to_col, value = move
@@ -54,6 +76,7 @@ class TwentyFortyEightGUI:
             x1 = to_col * TILE_SIZE + TILE_SIZE // 2
             y1 = to_row * TILE_SIZE + TILE_SIZE // 2 + 50
             self.animate_tile_move(x0, y0, x1, y1, str(value))
+        self.draw_merge_pop_effect(getattr(self.game, "merge_positions", []))
         self.canvas.delete("all")
         self.canvas.create_text(
             self.canvas_width // 2, 25,

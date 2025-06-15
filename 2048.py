@@ -23,17 +23,19 @@ def merge(line):
     non_zero = [x for x in line if x != 0]
     merged = []
     score = 0
+    merge_positions = []
     i = 0
     while i < len(non_zero):
         if i + 1 < len(non_zero) and non_zero[i] == non_zero[i + 1]:
             merged.append(non_zero[i] * 2)
             score += non_zero[i] * 2
+            merge_positions.append(len(merged) - 1)
             i += 2
         else:
             merged.append(non_zero[i])
             i += 1
     merged += [0] * (len(line) - len(merged))
-    return merged, score
+    return merged, score, merge_positions
 
 class TwentyFortyEight:
     """
@@ -48,6 +50,7 @@ class TwentyFortyEight:
         self._grid = [[0 for _ in range(self._width)] for _ in range(self._height)]
         self.score = 0
         self.last_moves = []
+        self.merge_positions = []
         self.new_tile()
         self.new_tile()
 
@@ -62,11 +65,12 @@ class TwentyFortyEight:
 
     def move(self, direction):
         self.last_moves = []
+        self.merge_positions = []
         has_changed = False
         for start_cell in self.get_start_cells(direction):
             temp_line = self.traverse_line(start_cell, OFFSETS[direction])
             original = [self._grid[row][col] for row, col in temp_line]
-            merged, gained = merge(original)
+            merged, gained, merged_indices = merge(original)
             if merged != original:
                 has_changed = True
                 self.score += gained
@@ -76,6 +80,9 @@ class TwentyFortyEight:
                     elif original[index] != 0 and original[index] == merged[index]:
                         self.last_moves.append((temp_line[index][0], temp_line[index][1], row, col, original[index]))
                     self._grid[row][col] = merged[index]
+                for idx in merged_indices:
+                    merge_row, merge_col = temp_line[idx]
+                    self.merge_positions.append((merge_row, merge_col, merged[idx]))
         if has_changed:
             self.new_tile()
 
