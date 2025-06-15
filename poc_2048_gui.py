@@ -18,11 +18,14 @@ class TwentyFortyEightGUI:
         self.root = tk.Tk()
         self.root.title("2048")
         self.canvas_width = TILE_SIZE * game.get_grid_width()
-        self.canvas_height = TILE_SIZE * game.get_grid_height() + 50
+        self.canvas_height = TILE_SIZE * game.get_grid_height() + 100
         self.canvas = tk.Canvas(self.root, width=self.canvas_width,
                                 height=self.canvas_height, bg=BACKGROUND_COLOR)
         self.canvas.pack()
         self.root.bind("<Key>", self.key_handler)
+        self.restart_button = tk.Button(self.root, text="Restart", command=self.restart_game,
+                                        font=("Verdana", 12, "bold"))
+        self.restart_button.pack(pady=5)
         self.score_text = self.canvas.create_text(
             self.canvas_width // 2, 25, text="Score: 0",
             font=SCORE_FONT, fill="white"
@@ -30,21 +33,27 @@ class TwentyFortyEightGUI:
         self.draw()
         self.root.mainloop()
 
-    def key_handler(self, event):
-        direction = {"Up": 1, "Down": 2, "Left": 3, "Right": 4}.get(event.keysym)
-        if direction:
-            self.game.move(direction)
-            self.draw()
+    def restart_game(self):
+        self.game.reset()
+        self.draw()
 
-    def animate_tile_move(self, x0, y0, x1, y1, text, steps=5):
-        tile = self.canvas.create_text(x0, y0, text=text, font=FONT, fill="black")
-        dx = (x1 - x0) / steps
-        dy = (y1 - y0) / steps
-        for _ in range(steps):
-            self.canvas.move(tile, dx, dy)
-            self.root.update()
-            self.root.after(10)
-        self.canvas.delete(tile)
+    def key_handler(self, event):
+        if not self.is_game_over():
+            direction = {"Up": 1, "Down": 2, "Left": 3, "Right": 4}.get(event.keysym)
+            if direction:
+                self.game.move(direction)
+                self.draw()
+
+    def is_game_over(self):
+        for direction in [1, 2, 3, 4]:
+            backup_grid = [row[:] for row in self.game._grid]
+            backup_score = self.game.score
+            self.game.move(direction)
+            if self.game._grid != backup_grid:
+                self.game._grid = backup_grid
+                self.game.score = backup_score
+                return False
+        return True
 
     def draw_merge_pop_effect(self, merged_tiles):
         # merged_tiles = list of (row, col, value)
@@ -95,6 +104,23 @@ class TwentyFortyEightGUI:
                 if value:
                     self.canvas.create_text((x0 + x1)//2, (y0 + y1)//2,
                                             text=str(value), font=FONT, fill="black")
+        if self.is_game_over():
+            self.canvas.create_text(
+                self.canvas_width // 2,
+                self.canvas_height // 2,
+                text="Game Over!",
+                font=("Verdana", 32, "bold"),
+                fill="red"
+            )
+    def animate_tile_move(self, x0, y0, x1, y1, text, steps=5):
+        tile = self.canvas.create_text(x0, y0, text=text, font=FONT, fill="black")
+        dx = (x1 - x0) / steps
+        dy = (y1 - y0) / steps
+        for _ in range(steps):
+            self.canvas.move(tile, dx, dy)
+            self.root.update()
+            self.root.after(10)
+        self.canvas.delete(tile)
 
 def run_gui(game):
     TwentyFortyEightGUI(game)
