@@ -47,6 +47,7 @@ class TwentyFortyEight:
     def reset(self):
         self._grid = [[0 for _ in range(self._width)] for _ in range(self._height)]
         self.score = 0
+        self.last_moves = []
         self.new_tile()
         self.new_tile()
 
@@ -60,6 +61,7 @@ class TwentyFortyEight:
         return self._width
 
     def move(self, direction):
+        self.last_moves = []
         has_changed = False
         for start_cell in self.get_start_cells(direction):
             temp_line = self.traverse_line(start_cell, OFFSETS[direction])
@@ -69,6 +71,10 @@ class TwentyFortyEight:
                 has_changed = True
                 self.score += gained
                 for index, (row, col) in enumerate(temp_line):
+                    if original[index] != 0 and merged[index] != 0 and original[index] != merged[index]:
+                        self.last_moves.append((temp_line[index][0], temp_line[index][1], row, col, original[index]))
+                    elif original[index] != 0 and original[index] == merged[index]:
+                        self.last_moves.append((temp_line[index][0], temp_line[index][1], row, col, original[index]))
                     self._grid[row][col] = merged[index]
         if has_changed:
             self.new_tile()
